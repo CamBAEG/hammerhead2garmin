@@ -8,12 +8,22 @@ logger = logging.getLogger(__name__)
 _DUPLICATE_MARKER = "already exists (duplicate)"
 
 
+def _prompt_mfa() -> str:
+    return input("Enter the Garmin MFA code sent to you: ").strip()
+
+
 class GarminClient:
-    def __init__(self, username: str, password: str):
-        self._client = Garmin(username, password)
+    def __init__(self, username: str, password: str, tokenstore: Path):
+        self._client = Garmin(username, password, prompt_mfa=_prompt_mfa)
+        self._tokenstore = tokenstore
 
     def login(self) -> None:
-        self._client.login()
+        # login(tokenstore) resumes from saved tokens when possible, otherwise
+        # does a full login (prompting for MFA) and persists the new tokens
+        # to the same directory automatically.
+        self._tokenstore.mkdir(parents=True, exist_ok=True)
+        self._client.login(str(self._tokenstore))
+        logger.info("Garmin login OK (tokens cached in %s)", self._tokenstore)
 
     def import_fit(self, filepath: Path) -> bool:
         """Upload a FIT file as an import.

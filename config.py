@@ -25,6 +25,7 @@ class Config:
     garmin_password: str
     state_file: Path = field(default_factory=lambda: Path("sync_state.json"))
     data_dir: Path = field(default_factory=lambda: Path("data"))
+    garmin_tokenstore: Path = field(default_factory=lambda: Path(".garmin_tokens"))
     sync_from_date: datetime | None = None
 
 
